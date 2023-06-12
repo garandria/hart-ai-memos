@@ -1,0 +1,14 @@
+This repository contains LaTeX transcripts of Artificial Intelligence memos
+(co-)written by Timothy Paul Hart [1] at the Computer Science and Artificial
+Intelligence Lab (CSAIL).
+
+Transcripted files:
+[ ] MACRO Definitions for LISP [2] (aim-057.tex)
+[ ] The Alpha-Beta Heuristic [3] (aim-030.tex)
+[ ] A Proposal for a Geometry Theorem Proving Program [4] (aim-056.tex)
+
+
+[1] https://www.chessprogramming.org/Timothy_Hart
+[2] https://dspace.mit.edu/handle/1721.1/6111
+[3] https://dspace.mit.edu/handle/1721.1/6098
+[4] https://dspace.mit.edu/handle/1721.1/6110
