@@ -1,0 +1,115 @@
+\documentclass{tufte-handout}
+
+\input{header}
+
+\title{MACRO Definition for LISP}
+\author[Timothy P. Hart]{Timothy P. Hart}
+\date{October 12, 1963} % without \date command, current date is supplied
+
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+In LISP 1.5 special forms are used for three logically separate purposes: a)~to
+reach the alist, b)~to allow function to have an indefinite number of arguments,
+and c)~to keep arguments from being evaluated.
+
+New LISP interpreters can easily satisfy need (a)~by making the alist n
+SPECIAL-type or APVAL-type entity. Uses (b) and (c) can be replaced by
+incorporating a \texttt{MACRO} instruction expander in \texttt{define}. I am
+proposing such expander.
+
+\begin{enumerate}
+\item The property list of a macro instruction will have the indicator
+  \texttt{MACRO} followed by a function of one argument, a form beginning with
+  the macro's name and whose value will replace the original form in all
+  function definitions.
+\item The function \texttt{macro[l]} will define macro's just as
+  \texttt{define[l]} defines functions.
+\item \texttt{define} will be modified to make macro expansions.
+\end{enumerate}
+
+Examples:
+
+\begin{enumerate}
+\item The existing FEXPR \texttt{csetq} may be replaced by the macro definition:
+  \begin{sexp}
+    MACRO ((
+    (STASH (LAMBDA (FORM) (LIST (QUOTE SETQ) (CADAR FORM) (LIST (CONS (CADR FORM)
+    (CADAR FORM))) )))
+    ))
+  \end{sexp}
+
+\item A new macro \texttt{stash} will generate the form found frequently in
+  \texttt{PROG'a}:
+
+  \begin{mexp}
+    x := cons[form;x]
+  \end{mexp}
+  
+  using the macro \texttt{stash}, one might write instead of the above:
+  % \begin{sexp}
+  %   (STASH FORM X).
+  % \end{sexp}
+
+  \texttt{Stash} may be defined by:
+  \begin{sexp}
+    MACRO ((
+    (STASH (LAMBDA (FORM) (LIST (QUOTE SETQ) (CADAR FORM) (LIST (CONS (CADR FORM)
+    (CADAR FORM))) )))
+    ))
+  \end{sexp}
+\item New macros may be defined in terms of old. \texttt{enter} is a macro for
+  adding a new entry to the table (dotted pairs) stored as the value of a
+  program variable.
+
+  \begin{mexp}
+    enter[form] $\macroequiv{}$ list[STASH;list[CONS;cadr[form];caddr[form]];
+    cadddr[form]]
+  \end{mexp}
+  \paragraph{}%
+  Incidentally, use of macros will alleviate the present difficulty resulting
+  from the 90 LISP compiler's only knowing about those fexprs in existence at
+  its birth.
+  \paragraph{}%
+  The macro defining function \texttt{macro[l]} is easily defined:
+  
+  \begin{mexp}
+    macro[l] $\equiv$ deflist[l;MACRO]
+  \end{mexp}
+
+  \paragraph{}%
+  The new \texttt{define} is a little harder:
+
+  \begin{mexp}
+    define[l] $\equiv$ deflist[mdef[l];EXPR]
+    mdef[l] $\equiv$ [
+            atom [l] $\rightarrow$ l;
+            eg[car[l];QUOTE] $\rightarrow$ l;
+            member[car[l];(LAMBDA LABEL PROG)] $\rightarrow$
+                cons[car[l];cons[cadr[l];mdef[caddr[l]]]]
+            get[car[l];MACRO] $\rightarrow$ mdef[get[car[l]; MACRO]
+        [l]]
+            T $\rightarrow$ maplist[l;$\lambda$[[j];mdef[car[j]]]]]
+  \end{mexp}
+\item The macro for \texttt{select} illustrates the use of macros as a means of
+  allowing functions of an arbitrary number of arguments:
+  \begin{mexp}
+    select[form] $\macroequiv{}$ $\lambda$[[g];
+        list[list[LAMBDA;list[g];cons[COND;
+            maplist[cadr[form];$\lambda$[[l];
+                [null[cdr[l]] $\rightarrow$ list[T;car[l]];
+                    T $\rightarrow$ [list[EQ;g;caar[l]];cadar[l]]]]]
+            ]];cadr[form]]][gensym[]]
+  \end{mexp}
+  
+\end{enumerate}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-command-extra-options: "-shell-escape"
+%%% TeX-master: "aim-057"
+%%% End:
